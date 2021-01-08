@@ -1,0 +1,15 @@
+.scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.line {
+  position: absolute;
+  top: 350px;
+  width: 2400px;
+  height: 14px;
+  background: url(/assets/spritesheet.png) repeat-x 0 0;
+}
+.line + div {
+  transform: translateX(2400px);
+}
