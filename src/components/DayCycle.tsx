@@ -1,5 +1,5 @@
 import gsap from 'gsap';
-import { ReactNode, useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { dayEvent, nightEvent } from './globalEvents';
 
 export default function DayCycle() {

@@ -3,13 +3,26 @@
   width: 100%;
   height: 100%;
 }
-.line {
+.ground {
   position: absolute;
   top: 350px;
   width: 2400px;
-  height: 14px;
-  background: url(/assets/spritesheet.png) repeat-x 0 0;
+  height: 24px;
+  background: url('/assets/default_200_percent/200-offline-sprite.png')
+    no-repeat -2px -104px;
 }
-.line + div {
-  transform: translateX(2400px);
+.sky {
+  position: fixed;
+  width: 100%;
+  height: 150px;
+  top: 0px;
+}
+.cloud {
+  position: absolute;
+  top: 10px;
+  right: -100px;
+  background: url('/assets/default_200_percent/200-offline-sprite.png')
+    no-repeat -174px -2px;
+  width: 84px;
+  height: 27px;
 }
