@@ -1,67 +1,55 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import './scene.css';
-import gsap, { random } from 'gsap/all';
+import Sky from './Sky';
+import Obstacle from '../obstacles/Obstacle';
+import { gsap } from 'gsap';
 
 type Props = {
   children: ReactNode;
 };
 export default function Scene({ children }: Props) {
   const [moving, move] = useState(false);
+  let movingAnim = useRef<gsap.core.Tween>();
+  const [obstacleVariant, setVariant] = useState(0);
   const sceneElement = useRef<HTMLDivElement>(null);
-  const clouds: Array<null | HTMLDivElement> = [];
-  useLayoutEffect(() => {
-    gsap.to(clouds, {
-      left: window.innerWidth + random(0, 2000),
-      duration: 90,
-      repeat: -1,
-    });
-  }, []);
+
   useEffect(() => {
     document.addEventListener('start', () => {
+      move((state) => !state);
+    });
+    document.addEventListener('stop', () => {
       move((state) => !state);
     });
     return () => {
       document.removeEventListener('start', () => {
         move((state) => !state);
       });
+      document.addEventListener('stop', () => {
+        move((state) => !state);
+      });
     };
   }, []);
   useEffect(() => {
-    let groundMoving: gsap.core.Tween;
-    if (moving) {
-      groundMoving = gsap.to(sceneElement.current, {
+    if (moving && movingAnim.current === undefined) {
+      movingAnim.current = gsap.to(sceneElement.current, {
         x: -4800,
         duration: 10,
         ease: 'linear',
         repeat: -1,
+        onRepeat: () => setVariant(gsap.utils.random(0, 5, 1)),
       });
-    }
+    } else if (moving) movingAnim.current?.play();
     return () => {
-      moving ? groundMoving.kill() : null;
+      movingAnim.current?.pause();
     };
   }, [moving]);
   return (
     <div className="scene">
-      <div className="sky">
-        {new Array(10).fill(null).map((el, index) => (
-          <div
-            className="cloud"
-            key={index}
-            style={{
-              left: random(-2400, -100, 100),
-              top: random(0, 150, 30),
-            }}
-            ref={(ref) => {
-              if (ref) {
-                clouds.push(ref);
-              }
-            }}
-          ></div>
-        ))}
-      </div>
+      <Sky />
       {children}
       <div className="background" ref={sceneElement}>
+        <Obstacle version={obstacleVariant} />
         <div className="ground"></div>
         <div
           className="ground"

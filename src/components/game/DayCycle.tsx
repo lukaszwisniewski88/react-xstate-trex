@@ -1,6 +1,6 @@
 import gsap from 'gsap';
 import { useEffect, useLayoutEffect, useState } from 'react';
-import { dayEvent, nightEvent } from './globalEvents';
+import { dayEvent, nightEvent } from '../globalEvents';
 
 export default function DayCycle() {
   const [isNight, toggleNight] = useState(false);

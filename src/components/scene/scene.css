@@ -26,3 +26,12 @@
   width: 84px;
   height: 27px;
 }
+.obstacle {
+  position: absolute;
+  background: url('/assets/default_200_percent/200-offline-sprite.png')
+    no-repeat;
+  background-position-y: -2px;
+  top: 280px;
+  width: 50px;
+  height: 100px;
+}
