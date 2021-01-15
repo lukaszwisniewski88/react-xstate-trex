@@ -1,122 +1,103 @@
-import { Machine, actions, assign } from 'xstate';
-import { asEffect } from '@xstate/react';
-import { startEvent, stopEvent } from '../globalEvents';
-const { log } = actions;
+import { assign, createMachine } from '@xstate/fsm';
 
 export type PositionEvent = {
   type: 'POSITION';
   x?: number;
   y?: number;
 };
-type DinoEvents = KeyboardEvent | TouchEvent | PositionEvent;
+type UserEvents = {
+  type: 'JUMP' | 'DUCK' | 'HIT';
+};
+export type AnimationEvents = {
+  type: 'ANIMATION_END';
+};
+type DinoEvents = UserEvents | PositionEvent | AnimationEvents;
+type DinoContext = { position?: { x?: number; y?: number } };
+const positionAssignment = assign<DinoContext, PositionEvent>({
+  position: (_, event) => ({
+    x: event.x,
+    y: event.y,
+  }),
+});
+type DinoState =
+  | {
+      value: 'standing';
+      context: {
+        position: undefined;
+      };
+    }
+  | {
+      value: 'running';
+      context: {
+        position: undefined;
+      };
+    }
+  | {
+      value: 'intro';
+      context: DinoContext;
+    }
+  | {
+      value: 'jump';
+      context: DinoContext;
+    }
+  | {
+      value: 'duck';
+      context: DinoContext;
+    }
+  | {
+      value: 'hitted';
+      context: {
+        position: undefined;
+      };
+    };
 
-const dinoMachine = Machine<
-  { position?: { x?: number; y?: number } },
-  DinoEvents
->(
-  {
-    id: 'dino',
-    initial: 'idle',
-    context: {
-      position: undefined,
-    },
-    states: {
-      idle: {
-        entry: log('idle'),
-        on: {
-          keyup: {
-            target: 'running',
-          },
-          touchend: {
-            target: 'running',
-          },
-          hit: 'hit',
-        },
-      },
-      running: {
-        entry: 'start',
-        exit: 'stop',
-        initial: 'run',
-        on: {
-          keyup: {
-            target: 'hit',
-            cond: (context, event) => {
-              if (event instanceof KeyboardEvent) {
-                return event.key === 'h';
-              } else return false;
-            },
-          },
-        },
-
-        states: {
-          run: {
-            invoke: {
-              src: 'intro',
-            },
-            on: {
-              keyup: [
-                {
-                  target: 'jump',
-                  cond: (_context, event) => {
-                    if (event instanceof KeyboardEvent)
-                      return event.key === ' ';
-                    return false;
-                  },
-                },
-                {
-                  target: 'duck',
-                  cond: (_context, event) => {
-                    if (event instanceof KeyboardEvent)
-                      return event.key === 'd';
-                    return false;
-                  },
-                },
-              ],
-              touchend: {
-                target: 'jump',
-              },
-            },
-          },
-          jump: {
-            entry: log('jump'),
-            invoke: {
-              src: 'jump',
-              onDone: 'run',
-            },
-            on: {
-              POSITION: {
-                actions: [
-                  assign({
-                    position: (context, event) => {
-                      const { x, y } = event as PositionEvent;
-                      return { x, y };
-                    },
-                  }),
-                ],
-              },
-            },
-          },
-          duck: {
-            after: {
-              500: 'run',
-            },
-          },
-        },
-      },
-      hit: {
-        entry: log('hit'),
-        on: {
-          keyup: 'idle',
-        },
-      },
-    },
+const dinoMachine = createMachine<DinoContext, DinoEvents, DinoState>({
+  id: 'dino',
+  initial: 'standing',
+  context: {
+    position: undefined,
   },
-  {
-    actions: {
-      start: asEffect(() => document.dispatchEvent(startEvent)),
-      stop: asEffect(() => document.dispatchEvent(stopEvent)),
+  states: {
+    standing: {
+      on: {
+        JUMP: 'intro',
+      },
     },
+    intro: {
+      on: {
+        ANIMATION_END: 'running',
+        POSITION: {
+          actions: positionAssignment,
+        },
+      },
+    },
+    running: {
+      on: {
+        HIT: 'hitted',
+        JUMP: 'jump',
+        DUCK: 'duck',
+      },
+    },
+    jump: {
+      on: {
+        HIT: 'hitted',
+        ANIMATION_END: 'running',
+        POSITION: {
+          actions: positionAssignment,
+        },
+      },
+    },
+    duck: {
+      on: {
+        HIT: 'hitted',
+        POSITION: {
+          actions: positionAssignment,
+        },
+        ANIMATION_END: 'running',
+      },
+    },
+    hitted: {},
   },
-);
+});
 
 export default dinoMachine;

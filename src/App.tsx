@@ -1,23 +1,20 @@
 import { useMachine } from '@xstate/react';
-import React from 'react';
-import './App.css';
-import DayCycle from './components/game/DayCycle';
-import Dino from './components/dino/Dino';
+import React, { useEffect } from 'react';
+import EventBus from './common/EventBus';
+import DinoGame from './components/game/DinoGame';
 import { gameMachine, GameContext } from './components/game/game.machine';
-import Scene from './components/scene/Scene';
 
 interface AppProps {}
 
 function App({}: AppProps) {
   const [state, send, service] = useMachine(gameMachine);
+  useEffect(() => {
+    const subscription = EventBus.subscribe((event) => {});
+    return () => subscription.unsubscribe();
+  }, []);
   return (
     <div className="App">
-      <GameContext.Provider value={service}>
-        <DayCycle />
-        <Scene>
-          <Dino />
-        </Scene>
-      </GameContext.Provider>
+      <DinoGame />
     </div>
   );
 }

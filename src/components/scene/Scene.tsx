@@ -1,8 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  Children,
+  isValidElement,
+} from 'react';
 import type { ReactNode } from 'react';
 import './scene.css';
-import Sky from './Sky';
-import Obstacle from '../obstacles/Obstacle';
+
 import { gsap } from 'gsap';
 
 type Props = {
@@ -44,12 +49,11 @@ export default function Scene({ children }: Props) {
       movingAnim.current?.pause();
     };
   }, [moving]);
+
   return (
     <div className="scene">
-      <Sky />
       {children}
       <div className="background" ref={sceneElement}>
-        <Obstacle version={obstacleVariant} />
         <div className="ground"></div>
         <div
           className="ground"

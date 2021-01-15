@@ -1,108 +1,81 @@
-import { useMachine } from '@xstate/react';
-import { gsap } from 'gsap';
-import { Observable } from 'rxjs';
-
-import React, { useCallback, useEffect, useRef } from 'react';
-import dinoMachine, { PositionEvent } from './Dino.machine';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { useMachine } from '@xstate/react/lib/fsm';
+import animations from './Dino.animations';
+import dinoMachine from './Dino.machine';
 
 export default function Dino() {
-  const [current, send] = useMachine(dinoMachine, {
-    logger: (data) => console.log('Machine Log: ', data),
-    devTools: true,
-    services: {
-      jump: (context, event) => {
-        return new Observable<PositionEvent>((subscriber) => {
-          const count = 0;
-          const jumpAnimation = gsap.to(dinoElement.current, {
-            y: -150,
-            duration: 0.3,
-            yoyo: true,
-            repeat: 1,
-            onUpdate: () => {
-              const rect = dinoElement.current?.getBoundingClientRect()!;
-              subscriber.next({
-                type: 'POSITION',
-                x: rect.x,
-                y: rect.y,
-              });
-            },
-            ease: 'power3.out',
-            onComplete: () => subscriber.complete(),
-          });
-          return () => jumpAnimation.kill();
-        });
-      },
-      intro: (context, event) => {
-        return new Observable((subscriber) => {
-          gsap.to(dinoElement.current, {
-            x: 100,
-            duration: 1,
-            onComplete: () => {
-              subscriber.complete();
-            },
-          });
-        });
-      },
-    },
-  });
+  const [current, send] = useMachine(dinoMachine);
   const dinoElement = useRef<HTMLDivElement>(null);
-  const keyboardHandler = useCallback((event: KeyboardEvent) => {
-    send(event);
-  }, []);
-
+  const dinoAnimations = useMemo(() => animations(dinoElement.current, send), [
+    dinoElement.current,
+  ]);
   useEffect(() => {
-    document.addEventListener('keyup', keyboardHandler);
-    // document.addEventListener('touchend', keyboardHandler);
-    return () => document.removeEventListener('keyup', keyboardHandler);
-  }, [current]);
-
+    const handler = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case ' ':
+          send('JUMP');
+          break;
+        case 'ArrowDown':
+          send('DUCK');
+          break;
+        case 'h':
+          send('HIT');
+          break;
+      }
+    };
+    let lastTouch = new Date().getTime();
+    const mobileHandler = (e: TouchEvent) => {
+      switch (e.type) {
+        case 'touchstart':
+          lastTouch = new Date().getTime();
+          break;
+        case 'touchend':
+          if (new Date().getTime() - lastTouch > 500) {
+            send('DUCK');
+          } else send('JUMP');
+          break;
+        case 'touchmove':
+          send('DUCK');
+          break;
+      }
+    };
+    document.addEventListener('keydown', handler);
+    document.addEventListener('touchstart', mobileHandler);
+    document.addEventListener('touchend', mobileHandler);
+    document.addEventListener('touchmove', mobileHandler);
+    return () => {
+      document.removeEventListener('keydown', handler);
+      document.removeEventListener('touchstart', mobileHandler);
+      document.removeEventListener('touchend', mobileHandler);
+      document.removeEventListener('touchmove', mobileHandler);
+    };
+  }, []);
   useEffect(() => {
     let animation: gsap.core.Tween;
     switch (true) {
-      case current.matches('running.run'):
-        animation = gsap.set(dinoElement.current, {
-          width: 88,
-          height: 94,
-          backgroundPositionX: -277,
-          backgroundPositionY: -116,
-        });
-        animation = gsap.to(dinoElement.current, {
-          backgroundPositionX: -366,
-          duration: 0.4,
-          repeat: -1,
-          ease: 'steps(1)',
-        });
+      case current.matches('intro'):
+        animation = dinoAnimations.intro();
         break;
-      case current.matches('running.duck'):
-        animation = gsap.set(dinoElement.current, {
-          width: 118,
-          height: 60,
-          backgroundPositionX: -591,
-          backgroundPositionY: -15,
-        });
-        animation = gsap.to(dinoElement.current, {
-          backgroundPositionX: 709,
-          duration: 0.4,
-          repeat: -1,
-          ease: 'steps(1)',
-        });
+      case current.matches('running'):
+        animation = dinoAnimations.running();
         break;
-      case current.matches('idle') || current.matches('hit'):
-        animation = gsap.set(dinoElement.current, {
-          backgroundPositionX: -99,
-        });
-        animation = gsap.to(dinoElement.current, {
-          backgroundPositionX: -188,
-          repeat: -1,
-          yoyo: true,
-          ease: 'steps(1)',
-        });
+      case current.matches('jump'):
+        animation = dinoAnimations.jump();
+        break;
+      case current.matches('duck'):
+        animation = dinoAnimations.duck();
+        break;
+      case current.matches('standing'):
+        animation = dinoAnimations.standing();
+        break;
+      case current.matches('hitted'):
+        animation = dinoAnimations.hit();
         break;
     }
     return () => {
       if (animation) animation.kill();
     };
-  }, [current.value, dinoElement]);
+  }, [current.value]);
   return (
     <div
       id="dino"
