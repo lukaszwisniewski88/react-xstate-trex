@@ -62,6 +62,7 @@ const dinoMachine = createMachine<DinoContext, DinoEvents, DinoState>({
       on: {
         JUMP: 'intro',
       },
+      exit: 'startGame',
     },
     intro: {
       on: {

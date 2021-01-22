@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useContext } from 'react';
+import React, { useEffect, useRef, useContext, lazy } from 'react';
 import { GameContext } from '../game/game.machine';
 import EventBus from '../../common/EventBus';
-import { useService } from '@xstate/react';
+import { useService } from '@xstate/react/lib/fsm';
 const obstaclePositions = [-652, -702, -752, -802, -852, -902];
 
 export default function Obstacle({ visible = true, version = 0 }) {
@@ -12,10 +12,6 @@ export default function Obstacle({ visible = true, version = 0 }) {
     const tick = setInterval(() => {
       if (obstacleElement.current) {
         const rect = obstacleElement.current.getBoundingClientRect();
-        send({
-          type: 'OBSTACLE',
-          payload: { ...rect },
-        });
         EventBus.next({
           type: 'OBSTACLE',
           payload: { ...rect },

@@ -1,10 +1,19 @@
-import React, { useEffect, useMemo, useRef } from 'react';
-import { useMachine } from '@xstate/react/lib/fsm';
+import React, { useContext, useEffect, useMemo, useRef } from 'react';
+import { useMachine, useService } from '@xstate/react/lib/fsm';
 import animations from './Dino.animations';
 import dinoMachine from './Dino.machine';
+import { GameContext } from '../game/game.machine';
 
 export default function Dino() {
-  const [current, send] = useMachine(dinoMachine);
+  const gameService = useContext(GameContext);
+  const [current, send] = useMachine(dinoMachine, {
+    actions: {
+      startGame: () => {
+        sendToGame('START');
+      },
+    },
+  });
+  const [gameState, sendToGame] = useService(gameService);
   const dinoElement = useRef<HTMLDivElement>(null);
   const dinoAnimations = useMemo(() => animations(dinoElement.current, send), [
     dinoElement.current,

@@ -1,20 +1,31 @@
-import { actions, Machine, Interpreter, interpret } from 'xstate';
+import { createMachine, interpret } from '@xstate/fsm';
 import { createContext } from 'react';
 
-export const gameMachine = Machine(
+type GameEvents = {
+  type: 'START' | 'END' | 'STOP';
+};
+
+export const gameMachine = createMachine<{}, GameEvents>(
   {
     id: 'game',
-    initial: 'welcome',
+    initial: 'stopped',
     states: {
-      welcome: {},
-      game: {},
+      stopped: {
+        on: {
+          START: 'game',
+        },
+      },
+      game: {
+        on: {
+          END: 'gameOver',
+          STOP: 'stopped',
+        },
+      },
       gameOver: {},
     },
   },
   {
     actions: {},
-    guards: {},
-    services: {},
   },
 );
 
