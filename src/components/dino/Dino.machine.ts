@@ -1,103 +1,104 @@
-import { assign, createMachine } from '@xstate/fsm';
+import { assign,createMachine, } from '@xstate/fsm';
 
-export type PositionEvent = {
-  type: 'POSITION';
-  x?: number;
-  y?: number;
-};
 type UserEvents = {
-  type: 'JUMP' | 'DUCK' | 'HIT';
+  type: 'JUMP' | 'DUCK';
 };
-export type AnimationEvents = {
-  type: 'ANIMATION_END';
-};
-type DinoEvents = UserEvents | PositionEvent | AnimationEvents;
-type DinoContext = { position?: { x?: number; y?: number } };
-const positionAssignment = assign<DinoContext, PositionEvent>({
-  position: (_, event) => ({
-    x: event.x,
-    y: event.y,
-  }),
-});
+type ExternalEvents = {
+  type: 'HIT' | 'START' | "ANIMATION_END"
+}
+type DinoContext = {
+  animationName :
+  | 'standing'
+  | 'running'
+  | 'duck'
+  | 'hitted'
+}
 type DinoState =
   | {
       value: 'standing';
       context: {
-        position: undefined;
-      };
+        animationName : 'standing'
+      }
     }
   | {
       value: 'running';
       context: {
-        position: undefined;
-      };
+        animationName: 'running'
+      }
     }
   | {
       value: 'intro';
-      context: DinoContext;
+      context: {
+        animationName: 'running'
+      };
     }
   | {
       value: 'jump';
-      context: DinoContext;
+      context:{
+        animationName: 'running'
+      };
     }
   | {
       value: 'duck';
-      context: DinoContext;
+      context: {
+        animationName: 'running'
+      }
     }
   | {
       value: 'hitted';
-      context: {
-        position: undefined;
-      };
+      context:{
+        animationName: 'hitted'
+      }
     };
 
-const dinoMachine = createMachine<DinoContext, DinoEvents, DinoState>({
+const dinoMachine = createMachine<DinoContext, UserEvents|ExternalEvents, DinoState>({
   id: 'dino',
   initial: 'standing',
   context: {
-    position: undefined,
+    animationName:'standing'
   },
   states: {
     standing: {
       on: {
-        JUMP: 'intro',
+        START: 'intro',
       },
-      exit: 'startGame',
     },
     intro: {
-      on: {
-        ANIMATION_END: 'running',
-        POSITION: {
-          actions: positionAssignment,
-        },
-      },
+      entry:assign({
+        animationName:(_ctx, _evt)=>'running'
+      }),
+      on:{
+        ANIMATION_END: 'running'
+      }
     },
     running: {
+      entry:assign({
+        animationName:(_ctx, _evt)=>'running'
+      }),
       on: {
-        HIT: 'hitted',
         JUMP: 'jump',
         DUCK: 'duck',
       },
     },
     jump: {
       on: {
-        HIT: 'hitted',
-        ANIMATION_END: 'running',
-        POSITION: {
-          actions: positionAssignment,
-        },
+        ANIMATION_END : 'running'
       },
     },
     duck: {
+      entry:()=>assign({
+        animationName:(_ctx,_evt)=>'duck'
+      }),
       on: {
-        HIT: 'hitted',
-        POSITION: {
-          actions: positionAssignment,
-        },
-        ANIMATION_END: 'running',
+        ANIMATION_END : 'running'
       },
     },
-    hitted: {},
+    hitted: {
+      entry:assign({
+        animationName:(_ctx, _evt)=>'hitted'
+      }),
+
+    },
   },
 });
 

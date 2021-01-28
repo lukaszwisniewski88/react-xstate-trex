@@ -40,3 +40,52 @@
   width: 50px;
   height: 100px;
 }
+.dino {
+  position: absolute;
+  top: 290px;
+  background-image: url("/assets/default_200_percent/200-offline-sprite.png");
+  height: 94px;
+  width: 88px;
+  background-position-x: -1854px;
+  background-position-y: 2px;
+  animation: standing 500ms steps(1) infinite;
+}
+@keyframes running {
+  0%,
+  100% {
+    background-position-x: -1854px;
+  }
+  50% {
+    background-position-x: -1942px;
+  }
+}
+@keyframes standing {
+  0%,
+  100% {
+    background-position-x: -1678px;
+  }
+  50% {
+    background-position-x: -1766px;
+  }
+}
+@keyframes hitted {
+  0%,
+  100% {
+    background-position-x: -2118px;
+  }
+  50% {
+    background-position-x: -1766px;
+  }
+}
+@keyframes duck {
+  0%,
+  100% {
+    top: 326px;
+    width: 118px;
+    height: 60px;
+    background-position: -2203px -36px;
+  }
+  50% {
+    background-position: -2321px -36px;
+  }
+}

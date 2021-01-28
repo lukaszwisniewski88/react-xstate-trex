@@ -32,6 +32,7 @@ export default function Scene({ children, isMoving = false }: Props) {
           className="ground"
           style={{ transform: 'translateX(2400px)' }}
         ></div>
+
         <div
           className="ground"
           style={{ transform: 'translateX(4800px)' }}

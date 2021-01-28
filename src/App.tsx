@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import EventBus from './common/EventBus';
 import DinoGame from './components/game/DinoGame';
 import './scene.css';
+
 interface AppProps {}
 
 function App({}: AppProps) {

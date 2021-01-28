@@ -2,9 +2,9 @@
   "include": ["src", "types"],
   "compilerOptions": {
     "module": "esnext",
-    "target": "esnext",
+    "target": "ES6",
     "moduleResolution": "node",
-    "jsx": "preserve",
+    "jsx": "react",
     "baseUrl": "./",
     /* paths - If you configure Snowpack import aliases, add them here. */
     "paths": {},
