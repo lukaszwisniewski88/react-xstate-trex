@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Sky from './Sky'
 import type { ReactNode } from 'react';
 import { gsap } from 'gsap';
 
@@ -25,6 +26,7 @@ export default function Scene({ children, isMoving = false }: Props) {
 
   return (
     <div className="scene">
+      <Sky />
       {children}
       <div className="background" ref={sceneElement}>
         <div className="ground"></div>

@@ -16,39 +16,27 @@ type DinoContext = {
 type DinoState =
   | {
       value: 'standing';
-      context: {
-        animationName : 'standing'
-      }
+      context: DinoContext
     }
   | {
       value: 'running';
-      context: {
-        animationName: 'running'
-      }
+      context: DinoContext
     }
   | {
       value: 'intro';
-      context: {
-        animationName: 'running'
-      };
+      context: DinoContext
     }
   | {
       value: 'jump';
-      context:{
-        animationName: 'running'
-      };
+      context: DinoContext
     }
   | {
       value: 'duck';
-      context: {
-        animationName: 'running'
-      }
+      context: DinoContext
     }
   | {
       value: 'hitted';
-      context:{
-        animationName: 'hitted'
-      }
+      context: DinoContext
     };
 
 const dinoMachine = createMachine<DinoContext, UserEvents|ExternalEvents, DinoState>({
@@ -86,7 +74,7 @@ const dinoMachine = createMachine<DinoContext, UserEvents|ExternalEvents, DinoSt
       },
     },
     duck: {
-      entry:()=>assign({
+      entry:assign({
         animationName:(_ctx,_evt)=>'duck'
       }),
       on: {
